@@ -16,11 +16,14 @@ import com.jcraft.jsch.Session;
 public class OpenStackSSh {
 	public static void main(String [] args)throws Exception{
 //	
-		Boolean result = deleteImage("sneha2","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");
-
+	//  Call to Delete an Instance
+		Boolean result = deleteImage("sneha2","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");	
+		// call to assign a Floating IP to an instance
+		Boolean assigningfloatingipresult = assignFloatingIP("sneha1","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");
+		
 	}
 
-// Function to create a session to SSH into system 	
+// Function to create a session to SSH into system 
 private static Session createSession() throws Exception{
 	String host="192.168.0.108";
 	String user="osbash";
@@ -77,6 +80,7 @@ private static String runCommand(String command1, Session session)
 	return result;
   }
 
+//Function to Delete an Instance
 public static Boolean deleteImage(String instancename,String projectId,String projectname,String userdomain,String username,String password) throws Exception{
 	Session session = createSession();
 
@@ -86,6 +90,25 @@ public static Boolean deleteImage(String instancename,String projectId,String pr
 	return true;
 }
 
+//Function to Create a Floating IP
+public static String floatingip(String instancename,String projectId,String projectname,String userdomain,String username,String password) throws Exception{
+	Session session = createSession();
+    String floatingips = runCommand("export OS_PROJECT_ID="+projectId+";export OS_PROJECT_NAME=\""+projectname+"\";export OS_USER_DOMAIN_NAME=\""+userdomain+"\";export OS_USERNAME=\""+username+"\";export OS_PASSWORD=\""+password+"\";nova floating-ip-create provider | grep -Eo '[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}'", session);
+	deleteSession(session);
+	return floatingips.replace("\r", "").replace("\n","");
+}
+
+//Function to Assign the Created Floating IP to an Instance
+public static Boolean assignFloatingIP(String instancename,String projectId,String projectname,String userdomain,String username,String password) throws Exception{
+	String floatingIP = floatingip(instancename,projectId,projectname,userdomain,username,password);
+	
+    Session session = createSession();
+	String res  = runCommand("export OS_PROJECT_ID="+projectId+";export OS_PROJECT_NAME=\""+projectname+"\";export OS_USER_DOMAIN_NAME=\""+userdomain+"\";export OS_USERNAME=\""+username+"\";export OS_PASSWORD=\""+password+"\";nova floating-ip-associate "+instancename+" \""+floatingIP+"\"", session);
+	deleteSession(session);
+	return true;
+}
+
+//Deleteing a Session
 private static void deleteSession(Session session){
 	session.disconnect();
 	System.out.println("Dis-connected");
