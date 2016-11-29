@@ -17,10 +17,12 @@ public class OpenStackSSh {
 	public static void main(String [] args)throws Exception{
 //	
 	//  Call to Delete an Instance
-		Boolean result = deleteImage("sneha2","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");	
+	//	Boolean result = deleteImage("sneha2","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");	
 		// call to assign a Floating IP to an instance
-		Boolean assigningfloatingipresult = assignFloatingIP("sneha1","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");
+//		Boolean assigningfloatingipresult = assignFloatingIP("sneha1","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");
 		
+		//Call to Assign Admin Role to the User
+		Boolean updateRole = assignRole("sneha1","9e7b82089e6e45d1891da2f62aca3935","admin","default","admin","admin_user_secret");
 	}
 
 // Function to create a session to SSH into system 
@@ -90,6 +92,13 @@ public static Boolean deleteImage(String instancename,String projectId,String pr
 	return true;
 }
 
+//Function to Assign Role to user
+public static Boolean assignRole(String instancename,String projectId,String projectname,String userdomain,String username,String password) throws Exception{
+	Session session = createSession();
+  String roleassigned = runCommand("export OS_PROJECT_ID="+projectId+";export OS_PROJECT_NAME=\""+projectname+"\";export OS_USER_DOMAIN_NAME=\""+userdomain+"\";export OS_USERNAME=\""+username+"\";export OS_PASSWORD=\""+password+"\";export OS_IDENTITY_API_VERSION=3;openstack role add --project admin --user sneha admin ", session);
+	deleteSession(session);
+	return true;
+}
 //Function to Create a Floating IP
 public static String floatingip(String instancename,String projectId,String projectname,String userdomain,String username,String password) throws Exception{
 	Session session = createSession();
